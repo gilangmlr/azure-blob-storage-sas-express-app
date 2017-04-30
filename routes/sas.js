@@ -37,7 +37,16 @@ blobRouter.get('/:container?/:filename?', function(req, res, next) {
     });
   }
 
-  var blobName = req.params.filename + '-' + uuid.v4() || uuid.v4();
+  var blobName;
+  if (req.params.filename) {
+    var split = (req.params.filename).split('.');
+    var name = split.slice(0, split.length - 1).join('.');
+    var ext = split[split.length - 1];
+
+    blobName = name + '-' + uuid.v4() + '.' + ext;
+  } else {
+    blobName = uuid.v4();
+  }
 
   var blobSAS = blobService.generateSharedAccessSignature(storageContainer, blobName, sharedAccessPolicy);
 
