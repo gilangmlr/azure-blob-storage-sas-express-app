@@ -1,5 +1,7 @@
 var azure = require('azure-storage');
 var express = require('express');
+var uuid = require('uuid');
+
 var router = express.Router();
 
 var storageAccount = process.env.AZURE_STORAGE_ACCOUNT || 'ggmlrstor';
