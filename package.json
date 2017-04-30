@@ -1,5 +1,5 @@
 {
-  "name": "express-app",
+  "name": "azure-blob-storage-sas-express-app",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -8,6 +8,7 @@
     "start:prod": "node ./bin/www"
   },
   "dependencies": {
+    "azure-storage": "^2.1.0",
     "body-parser": "~1.17.1",
     "cookie-parser": "~1.4.3",
     "cors": "^2.8.3",
