@@ -8,8 +8,46 @@ var storageEndpoint = 'https://' + storageAccount + '.blob.core.windows.net/';
 
 var blobService = azure.createBlobService(storageAccount, storageAccessKey);
 
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+var blobRouter = express.Router();
+
+blobRouter.get('/:container?/:filename?', function(req, res, next) {
+  var startDate = new Date();
+  var expiryDate = new Date(startDate);
+  expiryDate.setMinutes(startDate.getMinutes() + 1);
+  startDate.setMinutes(startDate.getMinutes() - 1);
+
+  var sharedAccessPolicy = {
+    AccessPolicy: {
+      Permissions: azure.BlobUtilities.SharedAccessPermissions.READ + azure.BlobUtilities.SharedAccessPermissions.ADD
+        + azure.BlobUtilities.SharedAccessPermissions.CREATE + azure.BlobUtilities.SharedAccessPermissions.WRITE
+        + azure.BlobUtilities.SharedAccessPermissions.DELETE + azure.BlobUtilities.SharedAccessPermissions.LIST,
+      Start: startDate,
+      Expiry: expiryDate
+    },
+  };
+
+  var storageContainer = 'default-container';
+  if (req.params.container) {
+    blobService.createContainerIfNotExists(req.params.container, function(error, result, response){
+        if(!error){
+          storageContainer = req.params.container;
+        }
+    });
+  }
+
+  var blobName = req.params.filename + '-' + uuid.v4() || uuid.v4();
+
+  var blobSAS = blobService.generateSharedAccessSignature(storageContainer, blobName, sharedAccessPolicy);
+
+  var result = {
+    token: blobSAS,
+    blobURI: storageEndpoint + storageContainer + '/' + blobName,
+    tokenURI: storageEndpoint + storageContainer + '/' + blobName + '?' + blobSAS
+  };
+
+  res.send(result);
 });
+
+router.use('/blob', blobRouter);
 
 module.exports = router;
